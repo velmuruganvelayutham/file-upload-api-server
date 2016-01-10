@@ -1,8 +1,10 @@
-var express = require('express');
-var router = express.Router();
-var Busboy = require('busboy');
-var fs = require('fs');
-var inspect = require('util').inspect;
+var express = require('express'),
+    router = express.Router(),
+    Busboy = require('busboy'),
+    path = require('path'),
+    os = require('os'),
+    fs = require('fs'),
+    inspect = require('util').inspect;
 /* GET home page. */
 router.get('/', function(req, res, next) {
     res.render('index', {
@@ -16,14 +18,9 @@ router.use('/upload', function(req, res, next) {
         headers: req.headers
     });
     busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
-        console.log('File [' + fieldname + ']: filename: ' + filename);
-        file.on('data', function(data) {
-            console.log('File [' + fieldname + '] got ' + data.length + ' bytes');
-        });
-        file.on('end', function() {
-            console.log('File [' + fieldname + '] Finished');
-        });
-        console.log('we can stream it to diffent project! ' + typeof file);
+        var saveTo = path.join(os.tmpDir(), path.basename(fieldname));
+        console.log(saveTo);
+        file.pipe(fs.createWriteStream(saveTo));
     });
     busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated) {
         console.log('Field [' + fieldname + ']: value: ' + inspect(val));
